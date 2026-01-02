@@ -1,0 +1,117 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Cm;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\CmImport;
+use App\Exports\CmTemplateExport;
+
+class CmController extends Controller
+{
+    public function downloadTemplate()
+    {
+        return Excel::download(new CmTemplateExport, 'cm_import_template.xlsx');
+    }
+
+    public function export(Request $request)
+    {
+        return Excel::download(new \App\Exports\CmExport($request->search), 'cm_data_' . date('Y-m-d') . '.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv',
+        ]);
+
+        Excel::import(new CmImport, $request->file('file'));
+
+        return redirect()->route('cms.index')->with('success', 'CM Data imported successfully.');
+    }
+
+    public function index(Request $request)
+    {
+        $query = Cm::latest();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('ppcw', 'like', "%{$search}%")
+                  ->orWhere('container', 'like', "%{$search}%")
+                  ->orWhere('shipper', 'like', "%{$search}%")
+                  ->orWhere('consignee', 'like', "%{$search}%")
+                  ->orWhere('cm', 'like', "%{$search}%");
+            });
+        }
+
+        $cms = $query->paginate(10);
+        return view('cm.index', compact('cms'));
+    }
+
+    public function create()
+    {
+        return view('cm.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'ppcw' => 'required|string|max:255',
+            'container' => 'required|string|max:255',
+            'seal' => 'nullable|string|max:255',
+            'shipper' => 'required|string|max:255',
+            'consignee' => 'required|string|max:255',
+            'status' => 'required|string|max:255',
+            'commodity' => 'nullable|string|max:255',
+            'size' => 'required|string|max:255',
+            'berat' => 'nullable|integer',
+            'keterangan' => 'nullable|string',
+            'cm' => 'required|string|max:255',
+            'atd' => 'nullable|date',
+        ]);
+
+        Cm::create($validatedData);
+
+        return redirect()->route('cms.index')->with('success', 'CM Data created successfully.');
+    }
+
+    public function show(Cm $cm)
+    {
+        return view('cm.show', compact('cm'));
+    }
+
+    public function edit(Cm $cm)
+    {
+        return view('cm.edit', compact('cm'));
+    }
+
+    public function update(Request $request, Cm $cm)
+    {
+        $validatedData = $request->validate([
+            'ppcw' => 'required|string|max:255',
+            'container' => 'required|string|max:255',
+            'seal' => 'nullable|string|max:255',
+            'shipper' => 'required|string|max:255',
+            'consignee' => 'required|string|max:255',
+            'status' => 'required|string|max:255',
+            'commodity' => 'nullable|string|max:255',
+            'size' => 'required|string|max:255',
+            'berat' => 'nullable|integer',
+            'keterangan' => 'nullable|string',
+            'cm' => 'required|string|max:255',
+            'atd' => 'nullable|date',
+        ]);
+
+        $cm->update($validatedData);
+
+        return redirect()->route('cms.index')->with('success', 'CM Data updated successfully.');
+    }
+
+    public function destroy(Cm $cm)
+    {
+        $cm->delete();
+        return redirect()->route('cms.index')->with('success', 'CM Data deleted successfully.');
+    }
+}

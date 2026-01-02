@@ -17,6 +17,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link rel="stylesheet" href="{{ asset('adminlte') }}/plugins/fontawesome-free/css/all.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="{{ asset('adminlte') }}/dist/css/adminlte.min.css">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="{{ asset('adminlte') }}/plugins/sweetalert2/sweetalert2.min.css">
+    <link rel="stylesheet" href="{{ asset('adminlte') }}/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
     @vite('resources/js/app.js')
 </head>
 
@@ -106,11 +109,30 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                         <p>Manage Users</p>
                                     </a>
                                 </li>
-                                <li class="nav-item">
                                     <a href="{{ route('roles.index') }}"
                                         class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
                                         <i class="nav-icon fas fa-user-tag"></i>
                                         <p>Manage Roles</p>
+                                    </a>
+                                </li>
+                                    <a href="{{ route('cms.index') }}"
+                                        class="nav-link {{ request()->routeIs('cms.*') ? 'active' : '' }}">
+                                        <i class="nav-icon fas fa-shipping-fast"></i>
+                                        <p>CM Data</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('coins.index') }}"
+                                        class="nav-link {{ request()->routeIs('coins.*') ? 'active' : '' }}">
+                                        <i class="nav-icon fas fa-coins"></i>
+                                        <p>Coin Data</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('monitoring.index') }}"
+                                        class="nav-link {{ request()->routeIs('monitoring.*') ? 'active' : '' }}">
+                                        <i class="nav-icon fas fa-chart-line"></i>
+                                        <p>Monitoring</p>
                                     </a>
                                 </li>
                             @elseif(Auth::user()->role->name === 'user')
@@ -193,11 +215,53 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="{{ asset('adminlte') }}/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <!-- AdminLTE App -->
     <script src="{{ asset('adminlte') }}/dist/js/adminlte.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="{{ asset('adminlte') }}/plugins/sweetalert2/sweetalert2.all.min.js"></script>
 
     <!-- AdminLTE for demo purposes -->
     <script>
         // Add any custom JavaScript here
+        $(function() {
+
+
+            // Check if Swal is defined
+            if (typeof Swal === 'undefined') {
+
+            }
+
+            var Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+
+            @if(session('success'))
+
+            Toast.fire({
+                icon: 'success',
+                title: {!! json_encode(session('success')) !!}
+            });
+            @endif
+
+            @if(session('error'))
+
+            Toast.fire({
+                icon: 'error',
+                title: {!! json_encode(session('error')) !!}
+            });
+            @endif
+            
+            @if(session('warning'))
+
+            Toast.fire({
+                icon: 'warning',
+                title: {!! json_encode(session('warning')) !!}
+            });
+            @endif
+        });
     </script>
+    @stack('scripts')
 </body>
 
 </html>
