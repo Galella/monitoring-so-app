@@ -13,18 +13,21 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        Role::create([
+        Role::firstOrCreate([
             'name' => 'admin',
+        ], [
             'description' => 'Administrator role with full access'
         ]);
 
-        Role::create([
+        Role::firstOrCreate([
             'name' => 'user',
+        ], [
             'description' => 'Regular user role'
         ]);
 
-        Role::create([
+        Role::firstOrCreate([
             'name' => 'moderator',
+        ], [
             'description' => 'Moderator role with limited admin access'
         ]);
     }
