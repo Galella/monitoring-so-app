@@ -37,7 +37,7 @@
                         
                         <div class="form-group">
                             <label for="password">New Password (Leave blank to keep current password)</label>
-                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" id="password">
+                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" id="password" autocomplete="new-password">
                             @error('password')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>

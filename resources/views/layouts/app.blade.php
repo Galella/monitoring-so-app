@@ -40,20 +40,30 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </ul>
 
             <!-- Right navbar links -->
-            <ul class="navbar-nav ml-auto">
+            <ul class="navbar-nav ml-auto"> 
                 <!-- User Account Menu -->
                 @auth
                     <li class="nav-item dropdown user-menu">
                         <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
-                            <img src="https://adminlte.io/themes/v3/dist/img/user2-160x160.jpg"
-                                class="user-image img-circle elevation-2" alt="User Image">
+                            @php
+                                $initials = collect(explode(' ', Auth::user()->name))
+                                    ->map(fn($segment) => strtoupper(substr($segment, 0, 1)))
+                                    ->take(2)
+                                    ->join('');
+                            @endphp
+                            <div class="user-image img-circle elevation-2 d-inline-flex justify-content-center align-items-center bg-primary text-white" 
+                                style="width: 30px; height: 30px; font-size: 14px; font-weight: bold;">
+                                {{ $initials }}
+                            </div>
                             <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                             <!-- User image -->
                             <li class="user-header bg-primary">
-                                <img src="https://adminlte.io/themes/v3/dist/img/user2-160x160.jpg"
-                                    class="img-circle elevation-2" alt="User Image">
+                                <div class="img-circle elevation-2 d-inline-flex justify-content-center align-items-center bg-white text-primary mx-auto mb-2" 
+                                    style="width: 90px; height: 90px; font-size: 36px; font-weight: bold;">
+                                    {{ $initials }}
+                                </div>
                                 <p>
                                     {{ Auth::user()->name }} -
                                     {{ Auth::user()->role->name === 'Super Admin' ? 'Admin' : Auth::user()->role->name ?? 'No Role' }}
