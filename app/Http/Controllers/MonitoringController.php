@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Cm;
 use App\Models\Coin;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\MonitoringExport;
+use App\Services\DataScopeService;
 
 class MonitoringController extends Controller
 {
@@ -14,67 +17,60 @@ class MonitoringController extends Controller
         $status = $request->get('status', 'all');
         $search = $request->get('search');
 
-        // Helper closures for join logic (CM + Container)
-        $matchCondition = function($query) {
-             $query->select(DB::raw(1))
-                   ->from('coins')
-                   ->whereColumn('coins.container', 'cms.container')
-                   ->whereColumn('coins.cm', 'cms.cm');
-        };
-        
-        $reverseMatchCondition = function($query) {
-             $query->select(DB::raw(1))
-                   ->from('cms')
-                   ->whereColumn('coins.container', 'cms.container')
-                   ->whereColumn('coins.cm', 'cms.cm');
-        };
+        // Helper closures removed, using DataScopeService instead
 
         // 1. Calculate Counts for Tabs
-        // Note: This could be optimized to cached counts if data is large
-        $countUnmatchedCm = DB::table('cms')->whereNotExists($matchCondition)->count();
-        $countUnmatchedCoin = DB::table('coins')->whereNotExists($reverseMatchCondition)->count();
-        $countMatched = DB::table('cms')->whereExists($matchCondition)->count();
+        $qUnmatchedCm = DB::table('cms')->whereNotExists(DataScopeService::matchCondition());
+        DataScopeService::apply($qUnmatchedCm, 'cms');
+        $countUnmatchedCm = $qUnmatchedCm->count();
+
+        $qUnmatchedCoin = DB::table('coins')->whereNotExists(DataScopeService::reverseMatchCondition());
+        DataScopeService::apply($qUnmatchedCoin, 'coins');
+        $countUnmatchedCoin = $qUnmatchedCoin->count();
+
+        $qMatched = DB::table('cms')->whereExists(DataScopeService::matchCondition());
+        DataScopeService::apply($qMatched, 'cms');
+        $countMatched = $qMatched->count();
         
-        // Total count (Union estimation or simple sum of distincts if no overlap, but here overlapped)
-        // All = UnmatchedCM + UnmatchedCoin + Matched
         $countAll = $countUnmatchedCm + $countUnmatchedCoin + $countMatched;
 
         $counts = [
             'all' => $countAll,
             'matched' => $countMatched,
-            'unmatched_cm' => $countUnmatchedCm, // Missing Coin
-            'unmatched_coin' => $countUnmatchedCoin // Missing CM
+            'unmatched_cm' => $countUnmatchedCm, 
+            'unmatched_coin' => $countUnmatchedCoin 
         ];
 
         // 2. Build the Main Query based on Status
         $query = null;
 
         if ($status === 'matched') {
-            // Source: CMS (inner join Coins basically)
             $query = DB::table('cms')
                 ->select('cm', 'container', DB::raw("'MATCHED' as status"))
-                ->whereExists($matchCondition);
+                ->whereExists(DataScopeService::matchCondition());
+            DataScopeService::apply($query, 'cms');
                 
         } elseif ($status === 'unmatched_cm') {
-            // Missing Coin -> Exists in CM, not in Coin
             $query = DB::table('cms')
                 ->select('cm', 'container', DB::raw("'UNMATCHED_CM' as status"))
-                ->whereNotExists($matchCondition);
+                ->whereNotExists(DataScopeService::matchCondition());
+            DataScopeService::apply($query, 'cms');
                 
         } elseif ($status === 'unmatched_coin') {
-            // Missing CM -> Exists in Coin, not in CM
             $query = DB::table('coins')
                 ->select('cm', 'container', DB::raw("'UNMATCHED_COIN' as status"))
-                ->whereNotExists($reverseMatchCondition);
+                ->whereNotExists(DataScopeService::reverseMatchCondition());
+            DataScopeService::apply($query, 'coins');
                 
         } else {
             // ALL -> Union strategy
-            $cmKeys = DB::table('cms')
-                ->select('cm', 'container');
+            $cmKeys = DB::table('cms')->select('cm', 'container');
+            DataScopeService::apply($cmKeys, 'cms');
                 
-            $query = DB::table('coins')
-                ->select('cm', 'container')
-                ->union($cmKeys);
+            $coinKeys = DB::table('coins')->select('cm', 'container');
+            DataScopeService::apply($coinKeys, 'coins');
+
+            $query = $coinKeys->union($cmKeys);
         }
 
         // 3. Apply Search
@@ -103,11 +99,13 @@ class MonitoringController extends Controller
             
             $computedStatus = $key->status ?? null;
             
-            $cmData = Cm::where('container', $key->container)
+            $cmData = Cm::forUser(auth()->user())
+                        ->where('container', $key->container)
                         ->where('cm', $key->cm)
                         ->first();
                         
-            $coinData = Coin::where('container', $key->container)
+            $coinData = Coin::forUser(auth()->user())
+                            ->where('container', $key->container)
                             ->where('cm', $key->cm)
                             ->first();
 
@@ -132,5 +130,14 @@ class MonitoringController extends Controller
             'currentStatus' => $status,
             'counts' => $counts
         ]);
+    }
+
+    public function export(Request $request)
+    {
+        $status = $request->get('status', 'all');
+        $search = $request->get('search');
+        $user = auth()->user();
+
+        return Excel::download(new MonitoringExport($status, $search, $user), 'monitoring_data_' . $status . '_' . now()->format('Y-m-d_H-i-s') . '.xlsx');
     }
 }

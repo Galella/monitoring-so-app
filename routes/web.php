@@ -44,6 +44,25 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // Route untuk Monitoring
     Route::get('monitoring', [\App\Http\Controllers\MonitoringController::class, 'index'])->name('monitoring.index');
+    Route::get('/monitoring/export', [App\Http\Controllers\MonitoringController::class, 'export'])->name('monitoring.export');
+    
+    // Monitoring SO
+    Route::get('/monitoring-so', [App\Http\Controllers\MonitoringSoController::class, 'index'])->name('monitoring-so.index');
+    Route::get('/monitoring-so/export', [App\Http\Controllers\MonitoringSoController::class, 'export'])->name('monitoring-so.export');
+    Route::put('/monitoring-so/{id}', [App\Http\Controllers\MonitoringSoController::class, 'update'])->name('monitoring-so.update');
+    Route::post('/monitoring-so/bulk-update', [App\Http\Controllers\MonitoringSoController::class, 'bulkUpdate'])->name('monitoring-so.bulk-update');
+
+    // Route untuk Wilayah dan Area
+    Route::resource('wilayahs', \App\Http\Controllers\WilayahController::class);
+    Route::resource('areas', \App\Http\Controllers\AreaController::class);
+
+    // Activity Logs
+    Route::get('activity-logs', [\App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 });
 
 // Route untuk user biasa

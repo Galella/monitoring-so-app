@@ -16,7 +16,8 @@ class RoleController extends Controller
 
     public function create()
     {
-        return view('role.create');
+        $permissions = \App\Models\Permission::all();
+        return view('role.create', compact('permissions'));
     }
 
     public function store(Request $request)
@@ -24,20 +25,27 @@ class RoleController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:roles,name',
             'description' => 'nullable|string|max:500',
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
-        Role::create([
+        $role = Role::create([
             'name' => $request->name,
             'description' => $request->description,
         ]);
+
+        if ($request->has('permissions')) {
+            $role->permissions()->sync($request->permissions);
+        }
 
         return redirect()->route('roles.index')->with('success', 'Role created successfully.');
     }
 
     public function edit($id)
     {
-        $role = Role::findOrFail($id);
-        return view('role.edit', compact('role'));
+        $role = Role::with('permissions')->findOrFail($id);
+        $permissions = \App\Models\Permission::all();
+        return view('role.edit', compact('role', 'permissions'));
     }
 
     public function update(Request $request, $id)
@@ -45,6 +53,8 @@ class RoleController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:roles,name,' . $id,
             'description' => 'nullable|string|max:500',
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
         $role = Role::findOrFail($id);
@@ -52,6 +62,12 @@ class RoleController extends Controller
             'name' => $request->name,
             'description' => $request->description,
         ]);
+
+        if ($request->has('permissions')) {
+            $role->permissions()->sync($request->permissions);
+        } else {
+            $role->permissions()->detach();
+        }
 
         return redirect()->route('roles.index')->with('success', 'Role updated successfully.');
     }

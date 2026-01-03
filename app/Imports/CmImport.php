@@ -47,6 +47,8 @@ class CmImport implements ToModel, WithHeadingRow
                 'berat'      => filter_var($row['berat'] ?? 0, FILTER_SANITIZE_NUMBER_INT),
                 'keterangan' => $row['keterangan'],
                 'atd'        => $atd,
+                'wilayah_id' => auth()->user()->wilayah_id ?? null,
+                'area_id'    => auth()->user()->area_id ?? null,
             ]
         );
     }

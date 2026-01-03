@@ -44,6 +44,11 @@
                                 </span>
                             @enderror
                         </div>
+
+                        <div class="form-group">
+                            <label for="password_confirmation">Confirm New Password</label>
+                            <input type="password" name="password_confirmation" class="form-control" id="password_confirmation">
+                        </div>
                         
                         <div class="form-group">
                             <label for="role_id">Role</label>
@@ -54,6 +59,36 @@
                                 @endforeach
                             </select>
                             @error('role_id')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="wilayah_id">Wilayah</label>
+                            <select name="wilayah_id" class="form-control @error('wilayah_id') is-invalid @enderror" id="wilayah_id">
+                                <option value="">Select Wilayah</option>
+                                @foreach($wilayahs as $wilayah)
+                                    <option value="{{ $wilayah->id }}" {{ old('wilayah_id', $user->wilayah_id) == $wilayah->id ? 'selected' : '' }}>{{ $wilayah->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('wilayah_id')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="area_id">Area</label>
+                            <select name="area_id" class="form-control @error('area_id') is-invalid @enderror" id="area_id">
+                                <option value="">Select Area</option>
+                                @foreach($areas as $area)
+                                    <option value="{{ $area->id }}" {{ old('area_id', $user->area_id) == $area->id ? 'selected' : '' }}>{{ $area->name }} ({{ $area->wilayah->name ?? '-' }})</option>
+                                @endforeach
+                            </select>
+                            @error('area_id')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
                                 </span>

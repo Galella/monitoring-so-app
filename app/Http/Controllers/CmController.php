@@ -33,7 +33,7 @@ class CmController extends Controller
 
     public function index(Request $request)
     {
-        $query = Cm::latest();
+        $query = Cm::forUser(auth()->user())->latest();
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -71,6 +71,12 @@ class CmController extends Controller
             'cm' => 'required|string|max:255',
             'atd' => 'nullable|date',
         ]);
+
+        // Auto-assign location based on creator
+        if (auth()->user()->role->name !== 'Super Admin') {
+            $validatedData['wilayah_id'] = auth()->user()->wilayah_id;
+            $validatedData['area_id'] = auth()->user()->area_id;
+        }
 
         Cm::create($validatedData);
 

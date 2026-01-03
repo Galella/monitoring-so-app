@@ -62,7 +62,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             </li>
                             <!-- Menu Footer-->
                             <li class="user-footer">
-                                <a href="#" class="btn btn-default btn-flat">Profile</a>
+                                <a href="{{ route('profile.edit') }}" class="btn btn-default btn-flat">Profile</a>
                                 <a href="{{ route('logout') }}"
                                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
                                     class="btn btn-default btn-flat float-right">Sign out</a>
@@ -94,56 +94,103 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         <!-- Add icons to the links using the .nav-icon class with font-awesome or any other icon font library -->
 
                         @auth
-                            @if (Auth::user()->role->name === 'admin' || Auth::user()->role->name === 'Super Admin')
-                                <li class="nav-item">
-                                    <a href="{{ route('admin.dashboard') }}"
-                                        class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                                        <i class="nav-icon fas fa-tachometer-alt"></i>
-                                        <p>Admin Dashboard</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('users.index') }}"
-                                        class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                                        <i class="nav-icon fas fa-users"></i>
-                                        <p>Manage Users</p>
-                                    </a>
-                                </li>
-                                    <a href="{{ route('roles.index') }}"
-                                        class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
-                                        <i class="nav-icon fas fa-user-tag"></i>
-                                        <p>Manage Roles</p>
-                                    </a>
-                                </li>
-                                    <a href="{{ route('cms.index') }}"
-                                        class="nav-link {{ request()->routeIs('cms.*') ? 'active' : '' }}">
-                                        <i class="nav-icon fas fa-shipping-fast"></i>
-                                        <p>CM Data</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('coins.index') }}"
-                                        class="nav-link {{ request()->routeIs('coins.*') ? 'active' : '' }}">
-                                        <i class="nav-icon fas fa-coins"></i>
-                                        <p>Coin Data</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('monitoring.index') }}"
-                                        class="nav-link {{ request()->routeIs('monitoring.*') ? 'active' : '' }}">
-                                        <i class="nav-icon fas fa-chart-line"></i>
-                                        <p>Monitoring</p>
-                                    </a>
-                                </li>
-                            @elseif(Auth::user()->role->name === 'user')
-                                <li class="nav-item">
-                                    <a href="{{ route('user.dashboard') }}"
-                                        class="nav-link {{ request()->routeIs('user.dashboard') ? 'active' : '' }}">
-                                        <i class="nav-icon fas fa-tachometer-alt"></i>
-                                        <p>User Dashboard</p>
-                                    </a>
-                                </li>
-                            @endif
+                            <li class="nav-item">
+                                <a href="{{ route('admin.dashboard') }}"
+                                    class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-tachometer-alt"></i>
+                                    <p>Dashboard</p>
+                                </a>
+                            </li>
+
+                            @can('view_users')
+                            <li class="nav-item">
+                                <a href="{{ route('users.index') }}"
+                                    class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-users"></i>
+                                    <p>Manage Users</p>
+                                </a>
+                            </li>
+                            @endcan
+
+                            @can('view_roles')
+                            <li class="nav-item">
+                                <a href="{{ route('roles.index') }}"
+                                    class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-user-tag"></i>
+                                    <p>Manage Roles</p>
+                                </a>
+                            </li>
+                            @endcan
+
+                            @can('view_wilayahs')
+                            <li class="nav-item">
+                                <a href="{{ route('wilayahs.index') }}"
+                                    class="nav-link {{ request()->routeIs('wilayahs.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-map"></i>
+                                    <p>Manage Wilayah</p>
+                                </a>
+                            </li>
+                            @endcan
+
+                            @can('view_areas')
+                            <li class="nav-item">
+                                <a href="{{ route('areas.index') }}"
+                                    class="nav-link {{ request()->routeIs('areas.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-map-marker-alt"></i>
+                                    <p>Manage Areas</p>
+                                </a>
+                            </li>
+                            @endcan
+
+                            @can('view_cms')
+                            <li class="nav-item">
+                                <a href="{{ route('cms.index') }}"
+                                    class="nav-link {{ request()->routeIs('cms.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-shipping-fast"></i>
+                                    <p>CM Data</p>
+                                </a>
+                            </li>
+                            @endcan
+
+                            @can('view_coins')
+                            <li class="nav-item">
+                                <a href="{{ route('coins.index') }}"
+                                    class="nav-link {{ request()->routeIs('coins.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-coins"></i>
+                                    <p>Coin Data</p>
+                                </a>
+                            </li>
+                            @endcan
+
+                            @can('view_monitoring')
+                            <li class="nav-item">
+                                <a href="{{ route('monitoring.index') }}"
+                                    class="nav-link {{ request()->routeIs('monitoring.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-chart-line"></i>
+                                    <p>Monitoring</p>
+                                </a>
+                            </li>
+                            @endcan
+
+                            @can('view_monitoring_so')
+                            <li class="nav-item">
+                                <a href="{{ route('monitoring-so.index') }}"
+                                    class="nav-link {{ request()->routeIs('monitoring-so.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-file-invoice"></i>
+                                    <p>Monitoring SO</p>
+                                </a>
+                            </li>
+                            @endcan
+
+                            @can('view_activity_logs')
+                            <li class="nav-item">
+                                <a href="{{ route('activity-logs.index') }}"
+                                    class="nav-link {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-history"></i>
+                                    <p>Activity Logs</p>
+                                </a>
+                            </li>
+                            @endcan
                         @endauth
 
                     </ul>

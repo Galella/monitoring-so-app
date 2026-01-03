@@ -26,8 +26,8 @@ class RoleMiddleware
         $actualRole = $user->role->name;
         $requestedRole = $role;
 
-        // Mapping role 'Super Admin' sebagai 'admin' untuk keperluan middleware
-        if ($actualRole === 'Super Admin') {
+        // Mapping role 'Super Admin', 'Admin Wilayah', 'Admin Area' sebagai 'admin' untuk keperluan middleware
+        if (in_array($actualRole, ['Super Admin', 'Admin Wilayah', 'Admin Area'])) {
             $actualRole = 'admin';
         }
 

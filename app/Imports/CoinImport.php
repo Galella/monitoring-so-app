@@ -71,6 +71,8 @@ class CoinImport implements ToModel, WithHeadingRow
                 'isi_barang' => $row['isi_barang'] ?? null,
                 'ppcw' => $row['ppcw'] ?? null,
                 'owner' => $row['owner'] ?? null,
+                'wilayah_id' => auth()->user()->wilayah_id ?? null,
+                'area_id'    => auth()->user()->area_id ?? null,
             ]
         );
     }

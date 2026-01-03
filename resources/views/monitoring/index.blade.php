@@ -34,20 +34,22 @@
                 </div>
                 <div class="card-body">
                     <!-- Search Form inside Card Body to align with content -->
-                    <div class="row mb-3">
-                         <div class="col-md-12">
-                            <form action="{{ route('monitoring.index') }}" method="GET" class="float-right">
-                                <input type="hidden" name="status" value="{{ $currentStatus }}">
-                                <div class="input-group input-group-sm" style="width: 250px;">
-                                    <input type="text" name="search" class="form-control" placeholder="Search Container / CM" value="{{ request('search') }}">
-                                    <div class="input-group-append">
-                                        <button type="submit" class="btn btn-default">
-                                            <i class="fas fa-search"></i>
-                                        </button>
-                                    </div>
+                    <!-- Search and Export -->
+                    <div class="d-flex justify-content-end mb-3">
+                        <form action="{{ route('monitoring.index') }}" method="GET" class="form-inline mr-2">
+                            <input type="hidden" name="status" value="{{ $currentStatus }}">
+                            <div class="input-group input-group-sm" style="width: 250px;">
+                                <input type="text" name="search" class="form-control" placeholder="Search Container / CM" value="{{ request('search') }}">
+                                <div class="input-group-append">
+                                    <button type="submit" class="btn btn-default">
+                                        <i class="fas fa-search"></i>
+                                    </button>
                                 </div>
-                            </form>
-                        </div>
+                            </div>
+                        </form>
+                        <a href="{{ route('monitoring.export', ['status' => $currentStatus, 'search' => request('search')]) }}" class="btn btn-success btn-sm">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </a>
                     </div>
 
                     <div class="table-responsive">

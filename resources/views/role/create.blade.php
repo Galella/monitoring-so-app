@@ -33,6 +33,57 @@
                                 </span>
                             @enderror
                         </div>
+
+                        <div class="form-group">
+                            <label>Permissions</label>
+                            
+                            @php
+                                $groupedPermissions = $permissions->groupBy(function($item) {
+                                    if (str_contains($item->name, 'users')) return 'User Management';
+                                    if (str_contains($item->name, 'roles')) return 'Role Management';
+                                    if (str_contains($item->name, 'wilayahs')) return 'Wilayah Management';
+                                    if (str_contains($item->name, 'areas')) return 'Area Management';
+                                    if (str_contains($item->name, 'monitoring_so')) return 'Monitoring SO Module';
+                                    if (str_contains($item->name, 'monitoring')) return 'Monitoring Dashboard';
+                                    if (str_contains($item->name, 'cms')) return 'CM Data Management';
+                                    if (str_contains($item->name, 'coins')) return 'Coin Data Management';
+                                    
+                                    return 'Other Permissions';
+                                });
+                            @endphp
+
+                            <div class="row">
+                                @foreach($groupedPermissions as $groupName => $perms)
+                                <div class="col-md-12">
+                                    <div class="card card-secondary card-outline">
+                                        <div class="card-header">
+                                            <h5 class="card-title">
+                                                <div class="custom-control custom-checkbox d-inline">
+                                                    <input class="custom-control-input parent-checkbox" type="checkbox" id="select_all_{{ Str::slug($groupName) }}" data-group="{{ Str::slug($groupName) }}">
+                                                    <label for="select_all_{{ Str::slug($groupName) }}" class="custom-control-label">{{ $groupName }}</label>
+                                                </div>
+                                            </h5>
+                                            <div class="card-tools">
+                                                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                @foreach($perms as $permission)
+                                                <div class="col-md-3">
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input class="custom-control-input child-checkbox group-{{ Str::slug($groupName) }}" type="checkbox" id="perm_{{ $permission->id }}" name="permissions[]" value="{{ $permission->id }}">
+                                                        <label for="perm_{{ $permission->id }}" class="custom-control-label">{{ $permission->display_name }}</label>
+                                                    </div>
+                                                </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
                     <!-- /.card-body -->
                     
@@ -46,4 +97,25 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        // Handle Select All click
+        $('.parent-checkbox').change(function() {
+            var group = $(this).data('group');
+            var isChecked = $(this).is(':checked');
+            $('.group-' + group).prop('checked', isChecked);
+        });
+
+        // Handle Child checkbox click to update Select All state
+        $('.child-checkbox').change(function() {
+            var groupClass = $(this).attr('class').match(/group-[\w-]+/)[0];
+            var group = groupClass.replace('group-', '');
+            var allChecked = $('.group-' + group).length === $('.group-' + group + ':checked').length;
+            $('#select_all_' + group).prop('checked', allChecked);
+        });
+    });
+</script>
+@endpush
 @endsection

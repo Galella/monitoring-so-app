@@ -6,11 +6,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+        ->logAll()
+        ->logOnlyDirty();
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -22,7 +31,24 @@ class User extends Authenticatable
         'email',
         'password',
         'role_id',
+        'wilayah_id',
+        'area_id',
     ];
+
+    public function wilayah()
+    {
+        return $this->belongsTo(Wilayah::class);
+    }
+
+    public function area()
+    {
+        return $this->belongsTo(Area::class);
+    }
+
+    public function hasPermission($permission)
+    {
+        return $this->role->permissions->contains('name', $permission);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

@@ -26,10 +26,12 @@ class LoginController extends Controller
             $user = Auth::user();
 
             // Redirect berdasarkan role - mendukung 'Super Admin' juga sebagai admin
-            if ($user->role && ($user->role->name === 'admin' || $user->role->name === 'Super Admin')) {
+            if ($user->role && in_array($user->role->name, ['admin', 'Super Admin', 'Admin Wilayah', 'Admin Area'])) {
                 return redirect()->intended('/admin/dashboard');
+            } elseif ($user->role && $user->role->name === 'user') {
+                return redirect()->intended(route('user.dashboard'));
             } else {
-                // Jika user tidak memiliki role atau bukan admin, bisa diarahkan ke halaman default
+                // Jika user tidak memiliki role atau bukan admin/user, bisa diarahkan ke halaman default
                 return redirect()->intended('/');
             }
         }

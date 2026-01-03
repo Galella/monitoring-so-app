@@ -37,7 +37,7 @@ class CoinController extends Controller
 
     public function index(Request $request)
     {
-        $query = Coin::latest();
+        $query = Coin::forUser(auth()->user())->latest();
 
         if ($request->filled('search')) {
             $search = $request->search;
