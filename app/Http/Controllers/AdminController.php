@@ -56,6 +56,61 @@ class AdminController extends Controller
             'so_pending' => $countSoPending,
         ];
 
+        // 3. Transactions Volume by Origin Station
+        // 3. Transactions Volume by Train per Month
+        // Get data for the last 6 months
+        $startDate = now()->subMonths(6)->startOfMonth();
+        
+        $volumeData = \App\Models\Coin::query()
+            ->forUser(auth()->user())
+            ->select(
+                \Illuminate\Support\Facades\DB::raw("DATE_FORMAT(atd, '%Y-%m') as month_year"),
+                'kereta',
+                \Illuminate\Support\Facades\DB::raw('count(*) as total')
+            )
+            ->whereNotNull('atd')
+            ->whereNotNull('kereta')
+            ->where('kereta', '!=', '')
+            ->where('atd', '>=', $startDate)
+            ->groupBy('month_year', 'kereta')
+            ->orderBy('month_year')
+            ->get();
+
+        // Process data for Chart.js
+        $months = [];
+        $trains = [];
+        $matrix = []; // [month][train] = total
+
+        foreach ($volumeData as $row) {
+             $m = \Carbon\Carbon::createFromFormat('Y-m', $row->month_year)->format('M Y');
+             $t = $row->kereta;
+             
+             if (!in_array($m, $months)) $months[] = $m;
+             if (!in_array($t, $trains)) $trains[] = $t;
+             
+             $matrix[$m][$t] = $row->total;
+        }
+
+        $datasets = [];
+        // Define some colors
+        $colors = ['#f56954', '#00a65a', '#f39c12', '#00c0ef', '#3c8dbc', '#d2d6de', '#605ca8', '#ff851b', '#39cccc', '#D81B60'];
+        
+        foreach ($trains as $index => $train) {
+            $dataPoints = [];
+            foreach ($months as $month) {
+                $dataPoints[] = $matrix[$month][$train] ?? 0;
+            }
+            
+            $datasets[] = [
+                'label' => $train,
+                'backgroundColor' => $colors[$index % count($colors)],
+                'data' => $dataPoints
+            ];
+        }
+
+        $stats['volume_labels'] = $months;
+        $stats['volume_datasets'] = $datasets;
+
         return view('admin.dashboard', compact('stats'));
     }
 }

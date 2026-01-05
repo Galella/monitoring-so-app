@@ -27,7 +27,17 @@ class DataScopeService
                 $query->where("{$table}.wilayah_id", $user->wilayah_id);
             }
             if ($user->area_id) {
-                $query->where("{$table}.area_id", $user->area_id);
+                if ($table === 'coins') {
+                    $areaName = $user->area->name ?? null;
+                    $query->where(function($q) use ($table, $user, $areaName) {
+                        $q->where("{$table}.area_id", $user->area_id);
+                        if ($areaName) {
+                            $q->orWhere("{$table}.stasiun_asal", $areaName);
+                        }
+                    });
+                } else {
+                    $query->where("{$table}.area_id", $user->area_id);
+                }
             }
         }
 

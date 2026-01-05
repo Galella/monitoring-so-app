@@ -84,7 +84,13 @@ class Coin extends Model
         }
         
         if ($user->area_id) {
-            $query->where('coins.area_id', $user->area_id);
+            $areaName = $user->area->name ?? null;
+            $query->where(function($q) use ($user, $areaName) {
+                $q->where('coins.area_id', $user->area_id);
+                if ($areaName) {
+                    $q->orWhere('coins.stasiun_asal', $areaName);
+                }
+            });
         }
         
         return $query;

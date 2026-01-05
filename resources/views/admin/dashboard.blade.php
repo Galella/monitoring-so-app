@@ -11,6 +11,29 @@
                 <div class="card-body">
                     <p>Welcome to the admin dashboard, {{ auth()->user()->name }}!</p>
                     <p>You have administrator privileges.</p>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="card card-primary">
+                                <div class="card-header">
+                                    <h3 class="card-title">Volume per Train (Kereta) - Last 6 Months</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart">
+                                        <canvas id="volumeChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="row">
                         <!-- Data Reconciliation Widgets -->
@@ -134,4 +157,49 @@
         </div>
     </div>
 </div>
+
+
+@push('scripts')
+<script>
+    $(function () {
+        var chartData = {
+            labels  : {!! json_encode($stats['volume_labels'] ?? []) !!},
+            datasets: {!! json_encode($stats['volume_datasets'] ?? []) !!}
+        }
+
+        var barChartCanvas = $('#volumeChart').get(0).getContext('2d')
+        var barChartData = $.extend(true, {}, chartData)
+
+        var barChartOptions = {
+            responsive              : true,
+            maintainAspectRatio     : false,
+            datasetFill             : false,
+            scales: {
+                xAxes: [{
+                    // stacked: true, // Grouped by default
+                    gridLines : {
+                        display : false,
+                    }
+                }],
+                yAxes: [{
+                    // stacked: true, // Grouped by default
+                    ticks: {
+                        beginAtZero: true,
+                        precision: 0
+                    },
+                    gridLines : {
+                        display : true,
+                    }
+                }]
+            }
+        }
+
+        new Chart(barChartCanvas, {
+            type: 'bar',
+            data: barChartData,
+            options: barChartOptions
+        })
+    })
+</script>
+@endpush
 @endsection

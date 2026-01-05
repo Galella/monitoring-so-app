@@ -274,6 +274,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="{{ asset('adminlte') }}/dist/js/adminlte.min.js"></script>
     <!-- SweetAlert2 -->
     <script src="{{ asset('adminlte') }}/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+    <!-- ChartJS -->
+    <script src="{{ asset('adminlte') }}/plugins/chart.js/Chart.min.js"></script>
 
     <!-- AdminLTE for demo purposes -->
     <script>
