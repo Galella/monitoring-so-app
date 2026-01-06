@@ -201,6 +201,25 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 </a>
                             </li>
                             @endcan
+
+                             <!-- Reports Menu -->
+                            <li class="nav-item {{ request()->routeIs('reports.*') ? 'menu-open' : '' }}">
+                                <a href="#" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-chart-bar"></i>
+                                    <p>
+                                        Laporan
+                                        <i class="right fas fa-angle-left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{ route('reports.monitoring-so.index') }}" class="nav-link {{ request()->routeIs('reports.monitoring-so.*') ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>Laporan Monitoring SO</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
                         @endauth
 
                     </ul>
@@ -292,7 +311,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
-                timer: 3000
+                timer: 5000
             });
 
             @if(session('success'))
@@ -307,7 +326,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
             Toast.fire({
                 icon: 'error',
-                title: {!! json_encode(session('error')) !!}
+                title: {!! json_encode(session('error')) !!},
+                timer: false,
+                showCloseButton: true
             });
             @endif
             

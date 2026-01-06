@@ -8,7 +8,9 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Carbon\Carbon;
 
-class CoinImport implements ToModel, WithHeadingRow
+use Maatwebsite\Excel\Concerns\WithValidation;
+
+class CoinImport implements ToModel, WithHeadingRow, WithValidation
 {
     public function model(array $row)
     {
@@ -75,5 +77,29 @@ class CoinImport implements ToModel, WithHeadingRow
                 'area_id'    => auth()->user()->area_id ?? null,
             ]
         );
+    }
+
+    public function rules(): array
+    {
+        return [
+            'order' => 'required|integer',
+            'container' => 'required|string',
+            'seal' => 'required|string',
+            'customer' => 'required|string',
+            'so' => 'nullable|string',
+            'atd' => 'nullable', // Custom parsing logic in model(), but key should exist
+        ];
+    }
+
+    public function customValidationMessages()
+    {
+        return [
+            'order.required' => 'Kolom Order harus diisi',
+            'order.integer' => 'Kolom Order harus berupa angka',
+            'container.required' => 'Kolom Container harus diisi',
+            'seal.required' => 'Kolom Seal harus diisi',
+            'customer.required' => 'Kolom Customer harus diisi',
+            'so.required' => 'Kolom SO harus diisi',
+        ];
     }
 }

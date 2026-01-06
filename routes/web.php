@@ -58,6 +58,13 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // Activity Logs
     Route::get('activity-logs', [\App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
+    // Report Routes
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/monitoring-so', [App\Http\Controllers\ReportMonitoringSoController::class, 'index'])->name('monitoring-so.index');
+        Route::get('/monitoring-so/export', [App\Http\Controllers\ReportMonitoringSoController::class, 'export'])->name('monitoring-so.export');
+        Route::get('/monitoring-so/export-pdf', [App\Http\Controllers\ReportMonitoringSoController::class, 'exportPdf'])->name('monitoring-so.export-pdf');
+    });
+
 });
 
 Route::middleware(['auth'])->group(function () {

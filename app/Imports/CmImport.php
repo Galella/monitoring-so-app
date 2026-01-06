@@ -8,7 +8,9 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 
-class CmImport implements ToModel, WithHeadingRow
+use Maatwebsite\Excel\Concerns\WithValidation;
+
+class CmImport implements ToModel, WithHeadingRow, WithValidation
 {
     /**
     * @param array $row
@@ -51,5 +53,31 @@ class CmImport implements ToModel, WithHeadingRow
                 'area_id'    => auth()->user()->area_id ?? null,
             ]
         );
+    }
+
+    public function rules(): array
+    {
+        return [
+            'container' => 'required|string',
+            'cm' => 'required|string',
+            'ppcw' => 'required|string',
+            'shipper' => 'required|string',
+            'consignee' => 'required|string',
+            'status' => 'required|string',
+            'size' => 'required|string',
+        ];
+    }
+
+    public function customValidationMessages()
+    {
+        return [
+            'container.required' => 'Kolom Container harus diisi',
+            'cm.required' => 'Kolom CM harus diisi',
+            'ppcw.required' => 'Kolom PPCW harus diisi',
+            'shipper.required' => 'Kolom Shipper harus diisi',
+            'consignee.required' => 'Kolom Consignee harus diisi',
+            'status.required' => 'Kolom Status harus diisi',
+            'size.required' => 'Kolom Size harus diisi',
+        ];
     }
 }

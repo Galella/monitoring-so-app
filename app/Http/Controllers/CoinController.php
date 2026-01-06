@@ -8,6 +8,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\CoinImport;
 use App\Exports\CoinExport;
 use App\Exports\CoinTemplateExport;
+use Maatwebsite\Excel\Validators\ValidationException;
 
 class CoinController extends Controller
 {
@@ -25,8 +26,19 @@ class CoinController extends Controller
         try {
             Excel::import(new CoinImport, $request->file('file'));
             return redirect()->route('coins.index')->with('success', 'Coin Data imported successfully.');
+        } catch (ValidationException $e) {
+            $failures = $e->failures();
+            $messages = [];
+            foreach ($failures as $failure) {
+                $messages[] = "Baris ke-{$failure->row()}: " . implode(', ', $failure->errors());
+            }
+            $errorMessage = implode("\n", array_slice($messages, 0, 5));
+            if (count($messages) > 5) {
+                $errorMessage .= "\n... dan " . (count($messages) - 5) . " kesalahan lainnya.";
+            }
+            return redirect()->back()->with('error', $errorMessage);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error importing data: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal mengimpor data: ' . $e->getMessage());
         }
     }
 

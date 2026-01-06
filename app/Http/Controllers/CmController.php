@@ -7,6 +7,7 @@ use App\Models\Cm;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\CmImport;
 use App\Exports\CmTemplateExport;
+use Maatwebsite\Excel\Validators\ValidationException;
 
 class CmController extends Controller
 {
@@ -26,9 +27,23 @@ class CmController extends Controller
             'file' => 'required|mimes:xlsx,xls,csv',
         ]);
 
-        Excel::import(new CmImport, $request->file('file'));
-
-        return redirect()->route('cms.index')->with('success', 'CM Data imported successfully.');
+        try {
+            Excel::import(new CmImport, $request->file('file'));
+            return redirect()->route('cms.index')->with('success', 'CM Data imported successfully.');
+        } catch (ValidationException $e) {
+             $failures = $e->failures();
+             $messages = [];
+             foreach ($failures as $failure) {
+                 $messages[] = "Baris ke-{$failure->row()}: " . implode(', ', $failure->errors());
+             }
+             $errorMessage = implode("\n", array_slice($messages, 0, 5));
+             if (count($messages) > 5) {
+                 $errorMessage .= "\n... dan " . (count($messages) - 5) . " kesalahan lainnya.";
+             }
+             return redirect()->back()->with('error', $errorMessage);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengimpor data: ' . $e->getMessage());
+        }
     }
 
     public function index(Request $request)
