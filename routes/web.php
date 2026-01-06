@@ -51,6 +51,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/monitoring-so/export', [App\Http\Controllers\MonitoringSoController::class, 'export'])->name('monitoring-so.export');
     Route::put('/monitoring-so/{id}', [App\Http\Controllers\MonitoringSoController::class, 'update'])->name('monitoring-so.update');
     Route::post('/monitoring-so/bulk-update', [App\Http\Controllers\MonitoringSoController::class, 'bulkUpdate'])->name('monitoring-so.bulk-update');
+    
+    // Timeline PO Routes
+    Route::get('/monitoring-so/timeline', [App\Http\Controllers\PoTimelineController::class, 'index'])->name('po-timeline.index');
+    Route::post('/monitoring-so/timeline', [App\Http\Controllers\PoTimelineController::class, 'store'])->name('po-timeline.store');
 
     // Route untuk Wilayah dan Area
     Route::resource('wilayahs', \App\Http\Controllers\WilayahController::class);

@@ -78,7 +78,13 @@
                                     <tr class="bg-light">
                                         <td colspan="8">
                                             <strong>PO Number: {{ $po ?: 'No PO' }}</strong> 
-                                            <span class="badge badge-secondary ml-2">{{ $groupItems->count() }} items</span>
+                                            <span class="badge badge-secondary ml-2 mr-2">{{ $groupItems->count() }} items</span>
+                                            
+                                            @if($po)
+                                                <button type="button" class="btn btn-xs btn-info btn-timeline" data-po="{{ $po }}">
+                                                    <i class="fas fa-history mr-1"></i> Timeline / Catatan
+                                                </button>
+                                            @endif
                                         </td>
                                     </tr>
                                     @foreach($groupItems as $item)
@@ -160,6 +166,40 @@
     </div>
 </div>
 
+<!-- Timeline Modal -->
+<div class="modal fade" id="timelineModal" tabindex="-1" role="dialog" aria-labelledby="timelineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="timelineModalLabel">Timeline PO: <span id="timeline-po-title"></span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Add Note Form -->
+                <form id="add-timeline-form" class="mb-4">
+                    <input type="hidden" id="timeline_po_number" name="po_number">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="timeline_description" name="description" placeholder="Tulis catatan/timeline baru..." required>
+                        <span class="input-group-append">
+                            <button type="submit" class="btn btn-primary">Tambah Catatan</button>
+                        </span>
+                    </div>
+                </form>
+
+                <!-- Timeline List -->
+                <div class="timeline" id="timeline-list">
+                    <!-- Items will be loaded here via AJAX -->
+                    <div class="time-label">
+                        <span class="bg-red">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <div class="modal fade" id="bulkConfirmModal" tabindex="-1" role="dialog" aria-labelledby="bulkConfirmModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -188,6 +228,78 @@
 
 <script>
     $(document).ready(function() {
+        // Timeline Button Click
+        $('.btn-timeline').click(function() {
+            var po = $(this).data('po');
+            $('#timeline-po-title').text(po);
+            $('#timeline_po_number').val(po);
+            $('#timelineModal').modal('show');
+            loadTimeline(po);
+        });
+
+        // Add Timeline Form Submit
+        $('#add-timeline-form').submit(function(e) {
+            e.preventDefault();
+            var po = $('#timeline_po_number').val();
+            var desc = $('#timeline_description').val();
+            
+            $.ajax({
+                url: "{{ route('po-timeline.store') }}",
+                method: "POST",
+                data: {
+                    po_number: po,
+                    description: desc,
+                    _token: "{{ csrf_token() }}"
+                },
+                success: function(response) {
+                    $('#timeline_description').val('');
+                    loadTimeline(po); // Reload list
+                },
+                error: function(xhr) {
+                    alert('Error adding note');
+                }
+            });
+        });
+
+        function loadTimeline(po) {
+            $('#timeline-list').html('<div class="text-center p-3"><i class="fas fa-spinner fa-spin"></i> Loading...</div>');
+            
+            $.ajax({
+                url: "{{ route('po-timeline.index') }}",
+                data: { po: po },
+                success: function(timelines) {
+                    var html = '';
+                    if(timelines.length === 0) {
+                        html = '<p class="text-center text-muted">Belum ada catatan timeline untuk PO ini.</p>';
+                    } else {
+                        timelines.forEach(function(item) {
+                            html += `
+                            <div>
+                                <i class="fas fa-comments bg-blue"></i>
+                                <div class="timeline-item">
+                                    <span class="time"><i class="fas fa-clock"></i> ${item.time_ago}</span>
+                                    <h3 class="timeline-header"><a href="#">${item.user_name}</a> menambahkan catatan</h3>
+                                    <div class="timeline-body">
+                                        ${item.description}
+                                    </div>
+                                    <div class="timeline-footer">
+                                        <small class="text-muted">${item.created_at_formatted}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+                        });
+                        html += `
+                            <div>
+                                <i class="fas fa-clock bg-gray"></i>
+                            </div>
+                        `;
+                    }
+                    $('#timeline-list').html(html);
+                }
+            });
+        }
+
         // Toggle Select All
         $('#select-all').click(function() {
             var checked = this.checked;

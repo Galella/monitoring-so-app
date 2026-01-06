@@ -92,10 +92,20 @@ class MonitoringSoController extends Controller
             'submit_so' => 'required|date',
         ]);
 
+        $oldSo = $coin->so;
         $coin->update([
             'so' => $request->so,
             'submit_so' => $request->submit_so
         ]);
+
+        // Auto-log to Timeline
+        if ($coin->po) {
+            \App\Models\PoTimeline::create([
+                'po_number' => $coin->po,
+                'description' => "Container {$coin->container} updated SO from '{$oldSo}' to '{$request->so}'",
+                'user_id' => auth()->id(),
+            ]);
+        }
 
         return redirect()->back()->with('success', 'SO updated successfully.');
     }
@@ -108,12 +118,26 @@ class MonitoringSoController extends Controller
         ]);
 
         $coins = Coin::whereIn('id', $request->ids)->get();
+        // Group by PO to log efficiently
+        $groupedByPo = $coins->groupBy('po');
 
         foreach ($coins as $coin) {
             $coin->update([
                 'so' => 'Manual',
                 'submit_so' => now(),
             ]);
+        }
+        
+        // Create timeline entry for each PO affected
+        foreach ($groupedByPo as $po => $groupCoins) {
+            if ($po) {
+                $count = $groupCoins->count();
+                \App\Models\PoTimeline::create([
+                    'po_number' => $po,
+                    'description' => "Bulk updated {$count} containers to SO 'Manual'",
+                    'user_id' => auth()->id(),
+                ]);
+            }
         }
 
         return redirect()->back()->with('success', 'Selected records updated to Manual SO.');
