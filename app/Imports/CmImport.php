@@ -58,13 +58,13 @@ class CmImport implements ToModel, WithHeadingRow, WithValidation
     public function rules(): array
     {
         return [
-            'container' => 'required|string',
-            'cm' => 'required|string',
-            'ppcw' => 'required|string',
-            'shipper' => 'required|string',
-            'consignee' => 'required|string',
-            'status' => 'required|string',
-            'size' => 'required|string',
+            'container' => 'required',
+            'cm' => 'required',
+            'ppcw' => 'required',
+            'shipper' => 'required',
+            'consignee' => 'required',
+            'status' => 'required',
+            'size' => 'required',
         ];
     }
 
