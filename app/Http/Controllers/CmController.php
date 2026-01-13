@@ -7,12 +7,18 @@ use App\Models\Cm;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\CmImport;
 use App\Exports\CmTemplateExport;
+use App\Exports\CmJictTemplateExport;
 use Maatwebsite\Excel\Validators\ValidationException;
 
 class CmController extends Controller
 {
     public function downloadTemplate()
     {
+        $user = auth()->user();
+        
+        if (strtoupper($user->area->code ?? '') === 'JICT') {
+             return Excel::download(new CmJictTemplateExport, 'cm_import_template_jict.xlsx');
+        }
         return Excel::download(new CmTemplateExport, 'cm_import_template.xlsx');
     }
 

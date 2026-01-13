@@ -19,7 +19,10 @@ class CmImport implements ToModel, WithHeadingRow, WithValidation
     */
     public function model(array $row)
     {
-        // Handle ATD date conversion
+        $user = auth()->user();
+        $areaCode = $user->area->code ?? null;
+
+        // Handle ATD date conversion (Used for both JICT and Standard if available)
         $atd = null;
         if (isset($row['atd'])) {
             try {
@@ -32,6 +35,45 @@ class CmImport implements ToModel, WithHeadingRow, WithValidation
                 // Keep null if parse fails
             }
         }
+
+        // --- Logic Khusus Area JICT ---
+        if ($areaCode === 'JICT') {
+            // Gabungkan info tambahan ke 'keterangan'
+            $keteranganParts = array_filter([
+                $row['kapal'] ? 'Kapal: ' . $row['kapal'] : null,
+                $row['voyage'] ? 'Voy: ' . $row['voyage'] : null,
+                $row['agen'] ? 'Agen: ' . $row['agen'] : null,
+                $row['forwarder'] ? 'Fwd: ' . $row['forwarder'] : null,
+                $row['bl'] ?? $row['b_l'] ? 'B/L: ' . ($row['bl'] ?? $row['b_l']) : null,
+                $row['no_dokumen'] ? 'No Dok: ' . $row['no_dokumen'] : null,
+                $row['tanggal_dokumen'] ? 'Tgl Dok: ' . $row['tanggal_dokumen'] : null,
+            ]);
+
+            $keterangan = implode(', ', $keteranganParts);
+
+            return Cm::updateOrCreate(
+                [
+                    'container' => $row['container'] ?? '-',
+                    'cm'        => $row['cm'] ?? '-',
+                    'seal'      => $row['seal'] ?? null,
+                ],
+                [
+                    'ppcw'       => $row['ppcw'] ?? '-',
+                    'shipper'    => $row['shipper'] ?? '-',
+                    'consignee'  => '-', // Default
+                    'status'     => $row['status'] ?? '-',
+                    'commodity'  => $row['commodity'] ?? null,
+                    'size'       => $row['size'] ?? '-',
+                    'berat'      => filter_var($row['weight'] ?? 0, FILTER_SANITIZE_NUMBER_INT), // Map weight -> berat
+                    'keterangan' => $keterangan,
+                    'atd'        => $atd,
+                    'wilayah_id' => $user->wilayah_id ?? null,
+                    'area_id'    => $user->area_id ?? null,
+                ]
+            );
+        }
+
+        // --- Logic Standar (Non-JICT) ---
 
         return Cm::updateOrCreate(
             [
@@ -49,14 +91,27 @@ class CmImport implements ToModel, WithHeadingRow, WithValidation
                 'berat'      => filter_var($row['berat'] ?? 0, FILTER_SANITIZE_NUMBER_INT),
                 'keterangan' => $row['keterangan'],
                 'atd'        => $atd,
-                'wilayah_id' => auth()->user()->wilayah_id ?? null,
-                'area_id'    => auth()->user()->area_id ?? null,
+                'wilayah_id' => $user->wilayah_id ?? null,
+                'area_id'    => $user->area_id ?? null,
             ]
         );
     }
 
     public function rules(): array
     {
+        $user = auth()->user();
+        $areaCode = $user->area->code ?? null;
+
+        if ($areaCode === 'JICT') {
+            return [
+                'container' => 'required',
+                'cm'        => 'required',
+                'ppcw'      => 'required',
+                'size'      => 'required',
+                // Shipper, consignee, status NOT required for JICT
+            ];
+        }
+
         return [
             'container' => 'required',
             'cm' => 'required',
