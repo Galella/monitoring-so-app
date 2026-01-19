@@ -295,6 +295,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="{{ asset('adminlte') }}/plugins/sweetalert2/sweetalert2.all.min.js"></script>
     <!-- ChartJS -->
     <script src="{{ asset('adminlte') }}/plugins/chart.js/Chart.min.js"></script>
+    <!-- bs-custom-file-input -->
+    <script src="{{ asset('adminlte') }}/plugins/bs-custom-file-input/bs-custom-file-input.min.js"></script>
 
     <!-- AdminLTE for demo purposes -->
     <script>
