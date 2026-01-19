@@ -16,6 +16,24 @@ class CoinImport implements ToModel, WithHeadingRow, WithValidation
     {
         // Must match headings in Template
         // Keys are slugified headings (lowercase, underscores)
+        $user = auth()->user();
+        $areaId = $user->area_id ?? null;
+        $wilayahId = $user->wilayah_id ?? null;
+
+        // Auto-assign Area for Super Admin
+        if (!$areaId) {
+            $station = $row['stasiun_asal'] ?? '';
+            if (stripos($station, 'Klari') !== false) {
+                $areaId = 2; // Klari
+                $wilayahId = 1;
+            } elseif (stripos($station, 'Sungai Lagoa') !== false) {
+                $areaId = 1; // Sungai Lagoa
+                $wilayahId = 1;
+            } elseif (stripos($station, 'JICT') !== false || stripos($station, 'Jakarta International Container Terminal') !== false) {
+                $areaId = 3; // JICT
+                $wilayahId = 1;
+            }
+        }
         
         $atd = null;
         if (isset($row['atd'])) {
@@ -73,8 +91,8 @@ class CoinImport implements ToModel, WithHeadingRow, WithValidation
                 'isi_barang' => $row['isi_barang'] ?? null,
                 'ppcw' => $row['ppcw'] ?? null,
                 'owner' => $row['owner'] ?? null,
-                'wilayah_id' => auth()->user()->wilayah_id ?? null,
-                'area_id'    => auth()->user()->area_id ?? null,
+                'wilayah_id' => $wilayahId,
+                'area_id'    => $areaId,
             ]
         );
     }
