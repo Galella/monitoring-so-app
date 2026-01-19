@@ -82,3 +82,25 @@ Route::middleware(['auth', 'role:user'])->group(function () {
         return view('user.dashboard');
     })->name('user.dashboard');
 });
+
+// TEMPORARY DIAGNOSTIC ROUTE
+Route::get('/diagnose-data', function() {
+    echo "<pre>";
+    echo "\n--- DIAGNOSA USER ---\n";
+    $users = App\Models\User::whereNotNull('area_id')->get();
+    foreach($users as $u) echo "User: {$u->name} | Role: {$u->role->name} | Area ID: {$u->area_id}\n";
+
+    echo "\n--- DIAGNOSA CM (Data yg tidak terlihat) ---\n";
+    $nullCms = App\Models\Cm::whereNull('area_id')->get();
+    echo "Jumlah CM tanpa Area: " . $nullCms->count() . "\n";
+    foreach($nullCms->take(5) as $cm) echo "Sample CM: {$cm->cm} | ID: {$cm->id}\n";
+
+    echo "\n--- DIAGNOSA COIN (Data yg tidak terlihat) ---\n";
+    $nullCoins = App\Models\Coin::whereNull('area_id')->get();
+    echo "Jumlah Coin tanpa Area: " . $nullCoins->count() . "\n";
+    
+    echo "Variasi Stasiun Asal pada data yg NULL:\n";
+    $stations = $nullCoins->pluck('stasiun_asal')->unique();
+    foreach($stations as $s) echo "- {$s}\n";
+    echo "</pre>";
+});
