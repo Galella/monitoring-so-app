@@ -81,26 +81,5 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     Route::get('/user/dashboard', function () {
         return view('user.dashboard');
     })->name('user.dashboard');
-});
-
-Route::get('/diagnose-data', function() {
-    echo "<pre>";
-    // echo "=== MULAI PERBAIKAN DATA ===\n"; 
-    // Commented out repair to focus on diagnosis first
-    
-    echo "\n--- DIAGNOSA USER (FULL) ---\n";
-    $users = App\Models\User::whereNotNull('area_id')->get();
-    foreach($users as $u) {
-        echo "User: {$u->name} | Role: {$u->role->name} | Wilayah ID: {$u->wilayah_id} | Area ID: {$u->area_id}\n";
-    }
-
-    echo "\n--- DIAGNOSA CM (Sample Klari) ---\n";
-    $cmKlari = App\Models\Cm::where('area_id', 2)->take(3)->get();
-    foreach($cmKlari as $c) echo "CM ID: $c->id | Wilayah: $c->wilayah_id | Area: $c->area_id\n";
-    
-    echo "\n--- DIAGNOSA COIN (Sample Klari) ---\n";
-    $coinKlari = App\Models\Coin::where('area_id', 2)->take(3)->get();
-    foreach($coinKlari as $c) echo "Coin ID: $c->id | Wilayah: $c->wilayah_id | Area: $c->area_id\n";
-
-    echo "</pre>";
+    })->name('user.dashboard');
 });
