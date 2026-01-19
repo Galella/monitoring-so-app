@@ -20,7 +20,25 @@ class CmImport implements ToModel, WithHeadingRow, WithValidation
     public function model(array $row)
     {
         $user = auth()->user();
-        $areaCode = $user->area->code ?? null;
+        $areaId = $user->area_id ?? null;
+        $wilayahId = $user->wilayah_id ?? null;
+
+        // If Super Admin (No Area), try to detect Area from CM code
+        if (!$areaId) {
+            $cmCode = strtoupper($row['cm'] ?? '');
+            if (str_contains($cmCode, 'KLI')) {
+                $areaId = 2; // Klari
+                $wilayahId = 1; 
+            } elseif (str_contains($cmCode, 'SAO')) {
+                $areaId = 1; // Sungai Lagoa
+                $wilayahId = 1;
+            } elseif (str_contains($cmCode, 'JICT')) {
+                $areaId = 3; // JICT
+                $wilayahId = 1;
+            }
+        }
+        
+        $areaCode = $areaId === 3 ? 'JICT' : ($user->area->code ?? null);
 
         // Handle ATD date conversion (Used for both JICT and Standard if available)
         $atd = null;
@@ -67,8 +85,9 @@ class CmImport implements ToModel, WithHeadingRow, WithValidation
                     'berat'      => filter_var($row['weight'] ?? 0, FILTER_SANITIZE_NUMBER_INT), // Map weight -> berat
                     'keterangan' => $keterangan,
                     'atd'        => $atd,
-                    'wilayah_id' => $user->wilayah_id ?? null,
-                    'area_id'    => $user->area_id ?? null,
+                    'atd'        => $atd,
+                    'wilayah_id' => $wilayahId,
+                    'area_id'    => $areaId,
                 ]
             );
         }
@@ -91,8 +110,9 @@ class CmImport implements ToModel, WithHeadingRow, WithValidation
                 'berat'      => filter_var($row['berat'] ?? 0, FILTER_SANITIZE_NUMBER_INT),
                 'keterangan' => $row['keterangan'],
                 'atd'        => $atd,
-                'wilayah_id' => $user->wilayah_id ?? null,
-                'area_id'    => $user->area_id ?? null,
+                'atd'        => $atd,
+                'wilayah_id' => $wilayahId,
+                'area_id'    => $areaId,
             ]
         );
     }
