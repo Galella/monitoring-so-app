@@ -148,9 +148,7 @@ class ReportMonitoringSoController extends Controller
 
     public function export(Request $request)
     {
-        // Reuse same logic for export (later)
-        // return Excel::download(new MonitoringSoReportExport($request), 'report_monitoring_so.xlsx');
-        return redirect()->back()->with('warning', 'Fitur export belum diaktifkan.');
+        return Excel::download(new \App\Exports\MonitoringSoReportExport($request), 'report_monitoring_so.xlsx');
     }
 
     public function exportPdf(Request $request)
